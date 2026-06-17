@@ -23,8 +23,8 @@ jobs:
           $branch_name = "${{ github.ref_name }}"
 
           $workspace_names = @{
-            "dev"  = "My Workspace"
-            "main" = "My Workspace"
+            "dev"  = "fabrictestws"
+            "main" = "fabrictestws"
           }
 
           $environments = @{
