@@ -28,7 +28,7 @@ jobs:
           }
 
           $environments = @{
-            "main"  = "dev"
+            "dev"  = "dev"
             "main" = "prod"
           }
 
