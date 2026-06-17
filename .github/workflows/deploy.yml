@@ -2,12 +2,16 @@ name: Deploy PBIP to Fabric
 
 on:
   push:
-    branches: [dev, main]
+    branches: [main]
   workflow_dispatch:
 
 jobs:
-  deploy:
+
+  # ✅ STEP 1: Deploy to DEV automatically
+  deploy-dev:
     runs-on: windows-latest
+
+    environment: dev  # optional, no approval needed here
 
     steps:
       - uses: actions/checkout@v3
@@ -16,27 +20,31 @@ jobs:
         with:
           python-version: '3.12'
 
-      - name: Set workspace variables
-        id: workspace
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.Conn_SnwFlakeTest }}
+          allow-no-subscriptions: true
+
+      - name: Deploy to Dev Workspace
         shell: pwsh
         run: |
-          $branch_name = "${{ github.ref_name }}"
+          pip install fabric-cicd
+          python -u deploy.py --spn-auth --workspace_name "fabrictestws" --environment "dev"
 
-          $workspace_names = @{
-            "dev"  = "fabrictestws"
-            "main" = "fabrictestws"
-          }
+  # ✅ STEP 2: Deploy to PROD (requires approval)
+  deploy-prod:
+    needs: deploy-dev   # 👈 ensures DEV runs first
+    runs-on: windows-latest
 
-          $environments = @{
-            "dev"  = "dev"
-            "main" = "prod"
-          }
+    environment: prod   # 👈 THIS triggers approval
 
-          $workspace_name = $workspace_names[$branch_name]
-          $environment = $environments[$branch_name]
+    steps:
+      - uses: actions/checkout@v3
 
-          echo "workspace_name=$workspace_name" >> $env:GITHUB_OUTPUT
-          echo "environment=$environment" >> $env:GITHUB_OUTPUT
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'
 
       - name: Azure Login
         uses: azure/login@v1
@@ -44,12 +52,8 @@ jobs:
           creds: ${{ secrets.Conn_SnwFlakeTest }}
           allow-no-subscriptions: true
 
-      - name: Deploy PBIP to Fabric
+      - name: Deploy to Prod Workspace
         shell: pwsh
         run: |
           pip install fabric-cicd
-          python -u deploy.py --spn-auth --workspace_name "${{ steps.workspace.outputs.workspace_name }}" --environment "${{ steps.workspace.outputs.environment }}"
-          if ($LASTEXITCODE -ne 0) {
-            Write-Error "Deployment failed with exit code: $LASTEXITCODE"
-            exit $LASTEXITCODE
-          }
+          python -u deploy.py --spn-auth --workspace_name "fabricprodws" --environment "prod"
