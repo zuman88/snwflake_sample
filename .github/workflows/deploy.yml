@@ -1,0 +1,55 @@
+name: Deploy PBIP to Fabric
+
+on:
+  push:
+    branches: [dev, main]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'
+
+      - name: Set workspace variables
+        id: workspace
+        shell: pwsh
+        run: |
+          $branch_name = "${{ github.ref_name }}"
+
+          $workspace_names = @{
+            "dev"  = "My Workspace"
+            "main" = "ABCBS-PowerBI-Prod"
+          }
+
+          $environments = @{
+            "dev"  = "dev"
+            "main" = "prod"
+          }
+
+          $workspace_name = $workspace_names[$branch_name]
+          $environment = $environments[$branch_name]
+
+          echo "workspace_name=$workspace_name" >> $env:GITHUB_OUTPUT
+          echo "environment=$environment" >> $env:GITHUB_OUTPUT
+
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.Conn_SnwFlakeTest }}
+          allow-no-subscriptions: true
+
+      - name: Deploy PBIP to Fabric
+        shell: pwsh
+        run: |
+          pip install fabric-cicd
+          python -u deploy.py --spn-auth --workspace_name "${{ steps.workspace.outputs.workspace_name }}" --environment "${{ steps.workspace.outputs.environment }}"
+          if ($LASTEXITCODE -ne 0) {
+            Write-Error "Deployment failed with exit code: $LASTEXITCODE"
+            exit $LASTEXITCODE
+          }
