@@ -24,7 +24,7 @@ jobs:
 
           $workspace_names = @{
             "dev"  = "My Workspace"
-            "main" = "fabrictestws"
+            "main" = "My Workspace"
           }
 
           $environments = @{
