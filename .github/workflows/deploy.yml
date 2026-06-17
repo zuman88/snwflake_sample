@@ -24,7 +24,7 @@ jobs:
 
           $workspace_names = @{
             "dev"  = "My Workspace"
-            "main" = "ABCBS-PowerBI-Prod"
+            "main" = "fabrictestws"
           }
 
           $environments = @{
