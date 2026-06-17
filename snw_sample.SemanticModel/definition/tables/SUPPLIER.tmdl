@@ -1,0 +1,93 @@
+table SUPPLIER
+	lineageTag: 8d563d1c-8825-411b-bda1-3e5412085934
+
+	column S_SUPPKEY
+		dataType: double
+		isNullable: false
+		sourceProviderType: decimal(38, 0)
+		lineageTag: b2a2778a-e2a4-42d7-8b73-275fa89074a1
+		summarizeBy: sum
+		sourceColumn: S_SUPPKEY
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column S_NAME
+		dataType: string
+		isNullable: false
+		sourceProviderType: nvarchar(25)
+		lineageTag: 197848d1-d248-4e84-b628-ffedb759d021
+		summarizeBy: none
+		sourceColumn: S_NAME
+
+		annotation SummarizationSetBy = Automatic
+
+	column S_ADDRESS
+		dataType: string
+		isNullable: false
+		sourceProviderType: nvarchar(40)
+		lineageTag: d0d93afd-82bb-4192-a609-718229034898
+		summarizeBy: none
+		sourceColumn: S_ADDRESS
+
+		annotation SummarizationSetBy = Automatic
+
+	column S_NATIONKEY
+		dataType: double
+		isNullable: false
+		sourceProviderType: decimal(38, 0)
+		lineageTag: 22daf31a-6feb-4bfb-9891-87561202bc36
+		summarizeBy: sum
+		sourceColumn: S_NATIONKEY
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column S_PHONE
+		dataType: string
+		isNullable: false
+		sourceProviderType: nvarchar(15)
+		lineageTag: a12cae3c-8e17-4393-adf7-af7a7133b6a4
+		summarizeBy: none
+		sourceColumn: S_PHONE
+
+		annotation SummarizationSetBy = Automatic
+
+	column S_ACCTBAL
+		dataType: double
+		isNullable: false
+		sourceProviderType: decimal(12, 2)
+		lineageTag: 1d66ebba-bd16-4937-a129-9e075a17d6b5
+		summarizeBy: sum
+		sourceColumn: S_ACCTBAL
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column S_COMMENT
+		dataType: string
+		sourceProviderType: nvarchar(101)
+		lineageTag: f4ebde03-7e84-4754-b48e-ffd8f8b8c9bb
+		summarizeBy: none
+		sourceColumn: S_COMMENT
+
+		annotation SummarizationSetBy = Automatic
+
+	partition SUPPLIER = m
+		mode: directQuery
+		source =
+				let
+				    Source = Snowflake.Databases("TAUALNB-NY64640.snowflakecomputing.com","COMPUTE_WH",[Implementation="2.0"]),
+				    SNOWFLAKE_SAMPLE_DATA_Database = Source{[Name="SNOWFLAKE_SAMPLE_DATA",Kind="Database"]}[Data],
+				    TPCH_SF100_Schema = SNOWFLAKE_SAMPLE_DATA_Database{[Name="TPCH_SF100",Kind="Schema"]}[Data],
+				    SUPPLIER_Table = TPCH_SF100_Schema{[Name="SUPPLIER",Kind="Table"]}[Data]
+				in
+				    SUPPLIER_Table
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

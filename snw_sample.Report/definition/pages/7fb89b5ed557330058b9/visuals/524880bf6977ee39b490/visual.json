@@ -1,0 +1,126 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.10.0/schema.json",
+  "name": "524880bf6977ee39b490",
+  "position": {
+    "x": 383.85240210683128,
+    "y": 132.42264311555653,
+    "z": 0,
+    "height": 300,
+    "width": 300
+  },
+  "visual": {
+    "visualType": "clusteredColumnChart",
+    "query": {
+      "queryState": {
+        "Y": {
+          "projections": [
+            {
+              "field": {
+                "Aggregation": {
+                  "Expression": {
+                    "Column": {
+                      "Expression": {
+                        "SourceRef": {
+                          "Entity": "CUSTOMER"
+                        }
+                      },
+                      "Property": "C_CUSTKEY"
+                    }
+                  },
+                  "Function": 0
+                }
+              },
+              "queryRef": "Sum(CUSTOMER.C_CUSTKEY)",
+              "nativeQueryRef": "Sum of C_CUSTKEY"
+            },
+            {
+              "field": {
+                "Aggregation": {
+                  "Expression": {
+                    "Column": {
+                      "Expression": {
+                        "SourceRef": {
+                          "Entity": "SUPPLIER"
+                        }
+                      },
+                      "Property": "S_SUPPKEY"
+                    }
+                  },
+                  "Function": 0
+                }
+              },
+              "queryRef": "Sum(SUPPLIER.S_SUPPKEY)",
+              "nativeQueryRef": "Sum of S_SUPPKEY"
+            }
+          ]
+        }
+      },
+      "sortDefinition": {
+        "sort": [
+          {
+            "field": {
+              "Aggregation": {
+                "Expression": {
+                  "Column": {
+                    "Expression": {
+                      "SourceRef": {
+                        "Entity": "CUSTOMER"
+                      }
+                    },
+                    "Property": "C_CUSTKEY"
+                  }
+                },
+                "Function": 0
+              }
+            },
+            "direction": "Descending"
+          }
+        ],
+        "isDefaultSort": true
+      }
+    },
+    "drillFilterOtherVisuals": true
+  },
+  "filterConfig": {
+    "filters": [
+      {
+        "name": "0ca846aa8890b927e3e9",
+        "field": {
+          "Aggregation": {
+            "Expression": {
+              "Column": {
+                "Expression": {
+                  "SourceRef": {
+                    "Entity": "CUSTOMER"
+                  }
+                },
+                "Property": "C_CUSTKEY"
+              }
+            },
+            "Function": 0
+          }
+        },
+        "type": "Advanced"
+      },
+      {
+        "name": "85450e44b1bd75356613",
+        "field": {
+          "Aggregation": {
+            "Expression": {
+              "Column": {
+                "Expression": {
+                  "SourceRef": {
+                    "Entity": "SUPPLIER"
+                  }
+                },
+                "Property": "S_SUPPKEY"
+              }
+            },
+            "Function": 0
+          }
+        },
+        "type": "Advanced"
+      }
+    ]
+  }
+}

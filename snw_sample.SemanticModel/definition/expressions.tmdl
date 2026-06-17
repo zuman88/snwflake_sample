@@ -1,0 +1,7 @@
+expression DB_Name = "SNW_SMPL" meta [IsParameterQuery=true, Type="Any", IsParameterQueryRequired=true]
+	lineageTag: f9cff80c-b9d4-4f25-b0ca-21b047efdb42
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Text
+
