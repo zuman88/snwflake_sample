@@ -4,10 +4,15 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+    inputs:
+      change_request_number:
+        description: 'ServiceNow Change Request number governing the prod deployment (e.g. CHG0030045)'
+        required: false
+        type: string
 
 jobs:
 
-  # ✅ STEP 1: Deploy to DEV automatically
+  # STEP 1: Deploy to DEV automatically
   deploy-dev:
     runs-on: windows-latest
 
@@ -32,12 +37,40 @@ jobs:
           pip install fabric-cicd
           python -u deploy.py --spn-auth --workspace_name "fabrictestws" --environment "dev"
 
-  # ✅ STEP 2: Deploy to PROD (requires approval)
+  # STEP 2: Link this run to a ServiceNow Change Request (only when dispatched with a CR number)
+  link-change-request:
+    needs: deploy-dev
+    if: github.event_name == 'workflow_dispatch' && inputs.change_request_number != ''
+    runs-on: ubuntu-latest
+    steps:
+      - name: Stamp ServiceNow CR with this run's correlation id
+        shell: bash
+        run: |
+          set -euo pipefail
+          CR_NUMBER="${{ inputs.change_request_number }}"
+          CORRELATION_ID="${{ github.repository }}#${{ github.run_id }}"
+
+          SYS_ID=$(curl -sf -u "${{ secrets.SERVICENOW_USERNAME }}:${{ secrets.SERVICENOW_PASSWORD }}" \
+            "${{ secrets.SERVICENOW_INSTANCE_URL }}/api/now/table/change_request?sysparm_query=number=$CR_NUMBER&sysparm_fields=sys_id" \
+            | python3 -c "import sys,json; print(json.load(sys.stdin)['result'][0]['sys_id'])")
+
+          curl -sf -u "${{ secrets.SERVICENOW_USERNAME }}:${{ secrets.SERVICENOW_PASSWORD }}" \
+            -X PATCH -H "Content-Type: application/json" \
+            -d "{\"u_correlation_id\":\"$CORRELATION_ID\",\"u_correlation_processed\":\"false\"}" \
+            "${{ secrets.SERVICENOW_INSTANCE_URL }}/api/now/table/change_request/$SYS_ID"
+
+          echo "Linked $CR_NUMBER (sys_id=$SYS_ID) to $CORRELATION_ID."
+          echo "The prod deployment below will stay paused until the Logic App sees this CR reach approval=approved in ServiceNow."
+
+  # STEP 3: Deploy to PROD (requires approval - either a human reviewer, or the
+  # Logic App orchestrator approving automatically once the linked ServiceNow
+  # CR above is approved)
   deploy-prod:
-    needs: deploy-dev   # 👈 ensures DEV runs first
+    needs: [deploy-dev, link-change-request]
+    if: always() && needs.deploy-dev.result == 'success' && (needs.link-change-request.result == 'success' || needs.link-change-request.result == 'skipped')
     runs-on: windows-latest
 
-    environment: prod   # 👈 THIS triggers approval
+    environment: prod   # required_reviewers protection rule lives here
 
     steps:
       - uses: actions/checkout@v3
